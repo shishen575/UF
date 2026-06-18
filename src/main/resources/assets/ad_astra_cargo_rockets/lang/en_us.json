@@ -1,0 +1,14 @@
+{
+  "itemGroup.ad_astra_cargo_rockets.items": "Ad-Astra Cargo Rockets",
+  "container.ad_astra_cargo_rockets.launch_pad": "Cargo Rocket Launch Pad",
+  "gui.ad_astra_cargo_rockets.input": "Input",
+  "gui.ad_astra_cargo_rockets.output": "Output",
+  "entity.ad_astra_cargo_rockets.ad_astra_cargo_rocket": "Cargo Rocket",
+  "block.ad_astra_cargo_rockets.launch_pad": "Cargo Rocket Launch Pad",
+  "item.ad_astra_cargo_rockets.cargo_rocket_tier_1": "Cargo Rocket Tier 1",
+  "item.ad_astra_cargo_rockets.cargo_rocket_tier_2": "Cargo Rocket Tier 2",
+  "item.ad_astra_cargo_rockets.cargo_rocket_tier_3": "Cargo Rocket Tier 3",
+  "item.ad_astra_cargo_rockets.cargo_rocket_tier_4": "Cargo Rocket Tier 4",
+  "block.ad_astra_cargo_rockets.launch_pad_dummy": "Cargo Rocket Launch Pad",
+  "item.ad_astra_cargo_rockets.rocket_scanner": "Rocket Scanner"
+}

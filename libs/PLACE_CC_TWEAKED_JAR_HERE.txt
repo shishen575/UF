@@ -1,0 +1,12 @@
+CC:Tweaked のビルド手順:
+
+1. CC:Tweaked の通常の mod JAR を入手する
+   - CurseForge: https://www.curseforge.com/minecraft/mc-mods/cc-tweaked/files
+   - Modrinth:   https://modrinth.com/mod/cc-tweaked/versions
+   ファイル名例: cc-tweaked-1.20.1-forge-1.116.0.jar
+
+2. この libs/ フォルダに置く
+
+3. ビルドする: ./gradlew build
+
+通常の mod JAR をそのまま compileOnly で参照できます。

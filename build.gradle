@@ -1,0 +1,100 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+}
+
+minecraft {
+    mappings channel: 'official', version: project.minecraft_version
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            mods {
+                ad_astra_cargo_rockets { source sourceSets.main }
+            }
+        }
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            mods {
+                ad_astra_cargo_rockets { source sourceSets.main }
+            }
+        }
+    }
+}
+
+repositories {
+    maven { url "https://maven.minecraftforge.net" }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content { includeGroup "maven.modrinth" }
+    }
+    maven { url "https://cursemaven.com" }
+    // CC:Tweaked - uncomment if you prefer Maven over local JAR
+    // maven {
+    //     url "https://maven.squiddev.cc"
+    //     content { includeGroup "cc.tweaked" }
+    // }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
+
+    // CC:Tweaked support:
+    // Place cc-tweaked-1.20.1-forge-api-1.116.0.jar in the libs/ folder, then build.
+    // Download from: https://www.curseforge.com/minecraft/mc-mods/cc-tweaked/files
+    //   or: https://modrinth.com/mod/cc-tweaked/versions
+    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+
+    compileOnly 'org.jetbrains:annotations:24.0.1'
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "forge_version", project.forge_version
+    filteringCharset "UTF-8"
+
+    filesMatching("META-INF/mods.toml") {
+        expand "version": project.version,
+                "minecraft_version": project.minecraft_version,
+                "forge_version": project.forge_version
+    }
+}
+
+def targetJavaVersion = 17
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        it.options.release.set(targetJavaVersion)
+    }
+}
+
+jar {
+    manifest {
+        attributes([
+            "Specification-Title"   : project.mod_id,
+            "Specification-Vendor"  : "ChiyahaRe",
+            "Specification-Version" : "1",
+            "Implementation-Title"  : project.archives_base_name,
+            "Implementation-Version": project.version,
+            "Implementation-Vendor" : "ChiyahaRe",
+        ])
+    }
+    from(["LICENSE.txt"])
+}

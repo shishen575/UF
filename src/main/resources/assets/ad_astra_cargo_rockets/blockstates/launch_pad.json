@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "ad_astra_cargo_rockets:block/launch_pad" }
+  }
+}
