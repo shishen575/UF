@@ -45,21 +45,16 @@ repositories {
         content { includeGroup "maven.modrinth" }
     }
     maven { url "https://cursemaven.com" }
-    // CC:Tweaked - uncomment if you prefer Maven over local JAR
-    // maven {
-    //     url "https://maven.squiddev.cc"
-    //     content { includeGroup "cc.tweaked" }
-    // }
+    maven {
+        url "https://maven.squiddev.cc"
+        content { includeGroup "cc.tweaked" }
+    }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
 
-    // CC:Tweaked support:
-    // Place cc-tweaked-1.20.1-forge-api-1.116.0.jar in the libs/ folder, then build.
-    // Download from: https://www.curseforge.com/minecraft/mc-mods/cc-tweaked/files
-    //   or: https://modrinth.com/mod/cc-tweaked/versions
-    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+    compileOnly "cc.tweaked:cc-tweaked-1.20.1-forge:${project.cc_tweaked_version}:api"
 
     compileOnly 'org.jetbrains:annotations:24.0.1'
 }
