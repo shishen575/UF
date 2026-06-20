@@ -65,7 +65,11 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
         // 枠線・背景・スロットの穴がすべてテクスチャから来るので、自前の枠線描画は不要。
         g.blit(TEXTURE, x, y, 0, 0, imageWidth, CHEST_AREA_H);
 
-        // 下2行分のスロット穴の上にメーターを重ねて隠し、Fuel/Cargoを表示する。
+        // 下2行分のメーターエリアのスロットの穴(くぼみ)をグレーで塗りつぶして平らにする。
+        // 上1行のロケットスロットは残し、その下からプレイヤーインベントリ手前まで塗る。
+        g.fill(x + 7, y + METER_AREA_Y, x + imageWidth - 7, y + PLAYER_INV_Y, 0xFFC6C6C6);
+
+        // 平らになった面の上にFuel/Cargoメーターを描く。
         drawFluidGauges(g, x, y);
 
         // プレイヤーインベントリ+ホットバー: vanilla共通の固定96px領域をそのままblit。

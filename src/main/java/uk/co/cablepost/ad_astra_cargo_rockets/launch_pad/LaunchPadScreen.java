@@ -58,7 +58,11 @@ public class LaunchPadScreen extends AbstractContainerScreen<LaunchPadMenu> {
         // 枠線・背景・スロットの穴がすべてテクスチャから来るので、自前の枠線描画は不要。
         g.blit(TEXTURE, ox, oy, 0, 0, imageWidth, CHEST_AREA_H);
 
-        // スロットの穴の上にエネルギー情報・メーターを重ねて隠す。
+        // スロットの穴(くぼみ)をグレーで塗りつぶして平らな面にする。
+        // 枠の内側だけを塗り、外周のテクスチャ枠線は残す。
+        g.fill(ox + 7, oy + HEADER_H, ox + imageWidth - 7, oy + PLAYER_INV_Y, 0xFFC6C6C6);
+
+        // 平らになった面の上にエネルギー情報・メーターを描く。
         drawEnergyArea(g, ox, oy);
 
         // プレイヤーインベントリ+ホットバー: vanilla共通の固定96px領域をそのままblit。
