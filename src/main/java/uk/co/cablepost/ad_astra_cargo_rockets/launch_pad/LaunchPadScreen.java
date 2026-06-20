@@ -55,8 +55,8 @@ public class LaunchPadScreen extends AbstractContainerScreen<LaunchPadMenu> {
         // テクスチャ部分の縁にある明るいハイライト線+右端の暗い線を、自前で塗った部分にも
         // 通すことで、blit領域と地続きの同じ幅の枠に見えるようにする。
         g.fill(ox, oy + PLAYER_INV_Y - 1, ox + imageWidth, oy + PLAYER_INV_Y, 0xFFFFFFFF);
-        g.fill(ox, oy + HEADER_H - 1, ox + 1, oy + PLAYER_INV_Y, 0xFFFFFFFF);
-        g.fill(ox + imageWidth - 1, oy + HEADER_H - 1, ox + imageWidth, oy + PLAYER_INV_Y, 0xFF555555);
+        g.fill(ox, oy + HEADER_H - 1, ox + 1, oy + PLAYER_INV_Y + 96, 0xFFFFFFFF);
+        g.fill(ox + imageWidth - 1, oy + HEADER_H - 1, ox + imageWidth, oy + PLAYER_INV_Y + 96, 0xFF555555);
         drawEnergyArea(g, ox, oy);
         // プレイヤーインベントリ+ホットバー: vanillaチェストGUIと共通の固定96px領域を
         // そのままblitする

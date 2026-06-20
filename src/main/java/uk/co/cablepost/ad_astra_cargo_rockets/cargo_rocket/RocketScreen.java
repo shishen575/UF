@@ -60,8 +60,8 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
         // テクスチャ部分の縁にある明るいハイライト線+右端の暗い線を、自前で塗った部分にも
         // 通すことで、blit領域と地続きの同じ幅の枠に見えるようにする。
         g.fill(x, y + PLAYER_INV_Y - 1, x + imageWidth, y + PLAYER_INV_Y, 0xFFFFFFFF);
-        g.fill(x, y + ROCKET_ROW_H - 1, x + 1, y + PLAYER_INV_Y, 0xFFFFFFFF);
-        g.fill(x + imageWidth - 1, y + ROCKET_ROW_H - 1, x + imageWidth, y + PLAYER_INV_Y, 0xFF555555);
+        g.fill(x, y + ROCKET_ROW_H - 1, x + 1, y + PLAYER_INV_Y + 96, 0xFFFFFFFF);
+        g.fill(x + imageWidth - 1, y + ROCKET_ROW_H - 1, x + imageWidth, y + PLAYER_INV_Y + 96, 0xFF555555);
         drawFluidGauges(g, x, y);
         // プレイヤーインベントリ+ホットバー: vanillaチェストGUIと共通の固定96px領域を
         // そのままblitする(行数に関わらず常にこの領域の見た目は同じ)
