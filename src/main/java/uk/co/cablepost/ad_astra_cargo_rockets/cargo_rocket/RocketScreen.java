@@ -48,14 +48,9 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
             drawSlotFrame(g, x + 8 + col * 18, y + HOTBAR_Y);
     }
 
-    /**
-     * チェストのスロットのような「くぼみ」の立体感を出すため、上辺・左辺をより暗くする。
-     * 単色の枠線だけだと平坦でぼやけた印象になるため。
-     */
+    /** バニラのチェストGUIのスロットと同じ配色: 単色の暗い枠線 + 中間グレーの中身。 */
     private void drawSlotFrame(GuiGraphics g, int sx, int sy) {
         g.fill(sx - 1, sy - 1, sx + 17, sy + 17, 0xFF373737);
-        g.fill(sx - 1, sy - 1, sx + 17, sy, 0xFF1B1B1B);
-        g.fill(sx - 1, sy - 1, sx, sy + 17, 0xFF1B1B1B);
         g.fill(sx, sy, sx + 16, sy + 16, 0xFF8B8B8B);
     }
 
@@ -82,9 +77,15 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
 
         int x = leftPos, y = topPos;
         if (isMouseOverBar(mouseX, mouseY, x + FUEL_GAUGE_X, y + GAUGE_Y, GAUGE_W, GAUGE_H)) {
-            g.renderTooltip(font, Component.literal(menu.getFuel() + " / " + menu.getMaxFuel() + " mB"), mouseX, mouseY);
+            g.renderTooltip(font, java.util.List.of(
+                    menu.getFuelTypeName().getVisualOrderText(),
+                    Component.literal(menu.getFuel() + " / " + menu.getMaxFuel() + " mB").getVisualOrderText()
+            ), mouseX, mouseY);
         } else if (isMouseOverBar(mouseX, mouseY, x + CARGO_GAUGE_X, y + GAUGE_Y, GAUGE_W, GAUGE_H)) {
-            g.renderTooltip(font, Component.literal(menu.getCargoFluid() + " / " + menu.getMaxCargoFluid() + " mB"), mouseX, mouseY);
+            g.renderTooltip(font, java.util.List.of(
+                    menu.getCargoFluidTypeName().getVisualOrderText(),
+                    Component.literal(menu.getCargoFluid() + " / " + menu.getMaxCargoFluid() + " mB").getVisualOrderText()
+            ), mouseX, mouseY);
         }
     }
 

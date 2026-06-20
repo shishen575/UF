@@ -94,14 +94,9 @@ public class LaunchPadScreen extends AbstractContainerScreen<LaunchPadMenu> {
         }
     }
 
-    /**
-     * チェストのスロットのような「くぼみ」の立体感を出すため、上辺・左辺をより暗く、
-     * 右辺・下辺をやや明るくする。単色の枠線だけだと平坦でぼやけた印象になるため。
-     */
+    /** バニラのチェストGUIのスロットと同じ配色: 単色の暗い枠線 + 中間グレーの中身。 */
     private void drawSlotFrame(GuiGraphics g, int sx, int sy) {
         g.fill(sx - 1, sy - 1, sx + 17, sy + 17, 0xFF373737);
-        g.fill(sx - 1, sy - 1, sx + 17, sy, 0xFF1B1B1B);
-        g.fill(sx - 1, sy - 1, sx, sy + 17, 0xFF1B1B1B);
         g.fill(sx, sy, sx + 16, sy + 16, 0xFF8B8B8B);
     }
 

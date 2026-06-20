@@ -1,11 +1,15 @@
 package uk.co.cablepost.ad_astra_cargo_rockets.cargo_rocket;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.registries.ForgeRegistries;
 import javax.annotation.Nullable;
 import uk.co.cablepost.ad_astra_cargo_rockets.AdAstraCargoRockets;
 
@@ -21,8 +25,8 @@ public class RocketMenu extends net.minecraft.world.inventory.AbstractContainerM
     @Nullable private final CargoRocketEntity rocket;
     private final ContainerData data;
 
-    // [0]=fuel, [1]=maxFuel, [2]=cargo, [3]=maxCargo
-    private static final int DATA_COUNT = 4;
+    // [0]=fuel, [1]=maxFuel, [2]=cargo, [3]=maxCargo, [4]=fuelFluidId, [5]=cargoFluidId
+    private static final int DATA_COUNT = 6;
 
     // ネットワーク経由でクライアントに同期された値のキャッシュ。
     // FluidTankはSynchedEntityDataの対象外でエンティティとして自動同期されないため、
@@ -43,6 +47,10 @@ public class RocketMenu extends net.minecraft.world.inventory.AbstractContainerM
                     case 1 -> rocket.fuelTank.getCapacity();
                     case 2 -> rocket.cargoFluidTank.getFluidAmount();
                     case 3 -> rocket.cargoFluidTank.getCapacity();
+                    // 流体の種類は文字列をContainerDataで同期できないため、レジストリIDを
+                    // 数値として送る（フルードレジストリIDはゲーム実行中は安定している）。
+                    case 4 -> ForgeRegistries.FLUIDS.getId(rocket.fuelTank.getFluid().getFluid());
+                    case 5 -> ForgeRegistries.FLUIDS.getId(rocket.cargoFluidTank.getFluid().getFluid());
                     default -> 0;
                 };
             }
@@ -72,6 +80,14 @@ public class RocketMenu extends net.minecraft.world.inventory.AbstractContainerM
     public int getMaxFuel() { return syncedValues[1]; }
     public int getCargoFluid()    { return syncedValues[2]; }
     public int getMaxCargoFluid() { return syncedValues[3]; }
+    public Component getFuelTypeName()       { return fluidName(syncedValues[4]); }
+    public Component getCargoFluidTypeName() { return fluidName(syncedValues[5]); }
+
+    private static Component fluidName(int fluidId) {
+        var fluid = ForgeRegistries.FLUIDS.getValue(fluidId);
+        if (fluid == null || fluid == Fluids.EMPTY) return Component.literal("Empty");
+        return new FluidStack(fluid, 1).getDisplayName();
+    }
 
     @Override public boolean stillValid(Player p) {
         return rocket != null && rocket.isAlive() && "grounded".equals(rocket.getFlightState());
