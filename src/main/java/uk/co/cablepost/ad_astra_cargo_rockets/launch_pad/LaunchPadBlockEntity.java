@@ -111,8 +111,23 @@ public class LaunchPadBlockEntity extends AbstractMachineBlockEntity implements 
             cargoHandlerDelegate = LazyOptional.of(() -> getDelegatedFluidHandler(Direction.UP));
             // 委譲先のロケットが変わった = パイプ/ホッパー/コンパレータから見える内容量が
             // 変化したタイミングなので、周囲ブロックに更新を通知する。
-            if (level != null) {
-                level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
+            notifyPadNeighbors();
+        }
+    }
+
+    /**
+     * 中心ブロックだけでなく3x3の全ダミーブロック位置についても近傍に更新を通知する。
+     * level.updateNeighborsAt(center, ...)は中心と面で接する4方向+上下しか通知しないため、
+     * 中心と対角線上にある角の4マスのダミーブロック（そこに繋がるパイプ等）には届かない。
+     * パイプ・コンパレータ等がどのダミーブロックに繋がっていても確実に追従できるよう、
+     * 3x3全マスについて個別に通知する。
+     */
+    public void notifyPadNeighbors() {
+        if (level == null) return;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                BlockPos pos = worldPosition.offset(dx, 0, dz);
+                level.updateNeighborsAt(pos, level.getBlockState(pos).getBlock());
             }
         }
     }

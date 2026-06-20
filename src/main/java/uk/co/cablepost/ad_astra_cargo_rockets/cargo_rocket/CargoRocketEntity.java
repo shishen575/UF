@@ -264,7 +264,8 @@ public class CargoRocketEntity extends Entity {
                     BlockPos check = pos.offset(dx, dy, dz);
                     if (level().getBlockEntity(check) instanceof uk.co.cablepost.ad_astra_cargo_rockets.launch_pad.LaunchPadBlockEntity lp
                             && lp.getRocket() == this) {
-                        level().updateNeighborsAt(check, level().getBlockState(check).getBlock());
+                        // 中心だけでなく3x3全マス(角のダミーブロックを含む)へ通知する。
+                        lp.notifyPadNeighbors();
                         return;
                     }
                 }
