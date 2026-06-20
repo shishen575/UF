@@ -3,36 +3,27 @@ package uk.co.cablepost.ad_astra_cargo_rockets.cargo_rocket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
  * ロケットのインベントリ・燃料/カーゴ流体タンクを表示するGUI画面。
- * 背景・スロットの枠は手描きの塗りつぶしではなく、vanillaのチェスト等と共通の本物の
- * コンテナテクスチャ(generic_54.png)をそのままblitして使う。これによりvanillaの
- * インベントリ画面と完全に同じ質感・配色になる。
- * vanillaのChestScreenと同じ構造: 「ヘッダー+チェスト行数分のスロット」と
- * 「プレイヤーインベントリ+ホットバー(常に固定の96px領域)」の2回のblitで構成される。
- * ロケット自身の9スロットは「1行のチェスト」として扱い、その下に独自のFuel/Cargo
- * ゲージ表示エリアを挟んでからプレイヤーインベントリ部分を続ける。
+ * vanillaの本物のテクスチャ(generic_54.png)を部分blitする方式は、自前で描く
+ * Fuel/Cargo表示エリアとの継ぎ目に縁の不連続が出てしまうため不採用とし、
+ * パネル全体を一枚の継続した塗りつぶしで描く（外枠+内側パネル+スロット枠）。
  */
 public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
 
-    private static final ResourceLocation TEXTURE =
-            new ResourceLocation("textures/gui/container/generic_54.png");
-
     public static final int SLOT_Y = 18;
-    // ヘッダー17px + チェスト1行18px分の本物のテクスチャ領域
-    private static final int ROCKET_ROW_H = 1 * 18 + 17;
-
+    // 上段インベントリの枠はy=17〜35を占めるため、"Fuel"/"Cargo"ラベル(GAUGE_Y-10)が
+    // それと重ならないよう、燃料/カーゴ行全体を十分下げて配置する。
     public static final int FUEL_GAUGE_X = 50;
     public static final int CARGO_GAUGE_X = 90;
-    public static final int GAUGE_Y = ROCKET_ROW_H + 12;
+    public static final int GAUGE_Y = 48;
     public static final int GAUGE_W = 30;
     public static final int GAUGE_H = 16;
-    public static final int PLAYER_INV_Y = ROCKET_ROW_H + 40;
-    public static final int HOTBAR_Y = PLAYER_INV_Y + 58;
-    public static final int IMAGE_H = PLAYER_INV_Y + 96;
+    public static final int PLAYER_INV_Y = 86;
+    public static final int HOTBAR_Y = 144;
+    public static final int IMAGE_H = 166;
 
     public RocketScreen(RocketMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -44,16 +35,26 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         int x = leftPos, y = topPos;
-        // ロケットの9スロット行: vanillaチェストのヘッダー+1行分の本物のテクスチャをそのまま使う
-        g.blit(TEXTURE, x, y, 0, 0, imageWidth, ROCKET_ROW_H);
-        // Fuel/Cargoゲージ(このMOD独自の表示)。ロケットの9スロット行とプレイヤー
-        // インベントリのblit領域の間に挟まる部分なので、ここだけは自前で背景を塗る
-        // 必要がある(塗らないとワールドが透けて見える「真ん中が抜けた」状態になる)。
-        g.fill(x, y + ROCKET_ROW_H, x + imageWidth, y + PLAYER_INV_Y, 0xFFC6C6C6);
+        // パネル全体を一枚の継続した塗りつぶしにすることで、縁の不連続を無くす。
+        g.fill(x, y, x + imageWidth, y + imageHeight, 0xFFC6C6C6);
+
+        drawSlotGrid(g, x, y);
         drawFluidGauges(g, x, y);
-        // プレイヤーインベントリ+ホットバー: vanillaチェストGUIと共通の固定96px領域を
-        // そのままblitする(行数に関わらず常にこの領域の見た目は同じ)
-        g.blit(TEXTURE, x, y + PLAYER_INV_Y, 0, 126, imageWidth, 96);
+    }
+
+    private void drawSlotGrid(GuiGraphics g, int x, int y) {
+        for (int i = 0; i < 9; i++) drawSlotFrame(g, x + 8 + i * 18, y + SLOT_Y);
+        for (int row = 0; row < 3; row++)
+            for (int col = 0; col < 9; col++)
+                drawSlotFrame(g, x + 8 + col * 18, y + PLAYER_INV_Y + row * 18);
+        for (int col = 0; col < 9; col++)
+            drawSlotFrame(g, x + 8 + col * 18, y + HOTBAR_Y);
+    }
+
+    /** バニラのチェストGUIのスロットと同じ配色: 単色の暗い枠線 + 中間グレーの中身。 */
+    private void drawSlotFrame(GuiGraphics g, int sx, int sy) {
+        g.fill(sx - 1, sy - 1, sx + 17, sy + 17, 0xFF373737);
+        g.fill(sx, sy, sx + 16, sy + 16, 0xFF8B8B8B);
     }
 
     private void drawFluidGauges(GuiGraphics g, int x, int y) {
