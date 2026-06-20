@@ -31,6 +31,10 @@ public class ScannerScreen extends Screen {
     // 名前変更直後、サーバーの応答が追いつく前に古い名前で上書きされるのを防ぐための一時保持
     private Integer pendingRenameEntityId = null;
     private String pendingRenameName = null;
+    // 名前欄に最後に値をセットした際の選択ロケットID。同じロケットを選択し続けている間は
+    // 2秒ごとの自動更新でnameBoxの内容を上書きしないようにするためのガード
+    // （これが無いと入力中でも自動更新でテキストが消えてしまう）。
+    private Integer nameBoxBoundEntityId = null;
 
     public ScannerScreen() {
         super(Component.literal("Rocket Scanner"));
@@ -122,8 +126,12 @@ public class ScannerScreen extends Screen {
     }
 
     private void updateSelectionFields() {
-        if (nameBox != null) {
+        Integer curId = selected != null ? selected.entityId : null;
+        // 選択ロケットが変わった時だけテキストを書き換える。同じロケットを選択し続けて
+        // いる間は、2秒ごとの自動更新が来ても入力中の文字を消さないようにする。
+        if (nameBox != null && !java.util.Objects.equals(curId, nameBoxBoundEntityId)) {
             nameBox.setValue(selected != null ? selected.name : "");
+            nameBoxBoundEntityId = curId;
         }
         if (renameButton != null) {
             renameButton.active = selected != null;

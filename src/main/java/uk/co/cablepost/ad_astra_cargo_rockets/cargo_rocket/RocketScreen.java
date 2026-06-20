@@ -11,9 +11,6 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
     public static final int SLOT_Y = 18;
     // 上段インベントリの枠はy=17〜35を占めるため、"Fuel"/"Cargo"ラベル(GAUGE_Y-10)が
     // それと重ならないよう、燃料/カーゴ行全体を十分下げて配置する。
-    public static final int FLUID_SLOT_Y = 50;
-    public static final int FUEL_SLOT_X = 8;
-    public static final int CARGO_SLOT_X = 26;
     public static final int FUEL_GAUGE_X = 50;
     public static final int CARGO_GAUGE_X = 90;
     public static final int GAUGE_Y = 48;
@@ -44,8 +41,6 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
 
     private void drawSlotGrid(GuiGraphics g, int x, int y) {
         for (int i = 0; i < 9; i++) drawSlotFrame(g, x + 8 + i * 18, y + SLOT_Y);
-        drawSlotFrame(g, x + FUEL_SLOT_X, y + FLUID_SLOT_Y);
-        drawSlotFrame(g, x + CARGO_SLOT_X, y + FLUID_SLOT_Y);
         for (int row = 0; row < 3; row++)
             for (int col = 0; col < 9; col++)
                 drawSlotFrame(g, x + 8 + col * 18, y + PLAYER_INV_Y + row * 18);
@@ -53,8 +48,14 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
             drawSlotFrame(g, x + 8 + col * 18, y + HOTBAR_Y);
     }
 
+    /**
+     * チェストのスロットのような「くぼみ」の立体感を出すため、上辺・左辺をより暗くする。
+     * 単色の枠線だけだと平坦でぼやけた印象になるため。
+     */
     private void drawSlotFrame(GuiGraphics g, int sx, int sy) {
         g.fill(sx - 1, sy - 1, sx + 17, sy + 17, 0xFF373737);
+        g.fill(sx - 1, sy - 1, sx + 17, sy, 0xFF1B1B1B);
+        g.fill(sx - 1, sy - 1, sx, sy + 17, 0xFF1B1B1B);
         g.fill(sx, sy, sx + 16, sy + 16, 0xFF8B8B8B);
     }
 

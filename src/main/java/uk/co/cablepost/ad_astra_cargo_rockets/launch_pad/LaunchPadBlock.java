@@ -166,27 +166,6 @@ public class LaunchPadBlock extends BaseEntityBlock {
         if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
         ItemStack stack = player.getItemInHand(hand);
 
-        // バケツ右クリックで液体をタンクに入れる
-        // 下面クリック = 燃料タンク、それ以外 = 貨物タンク
-        if (!stack.isEmpty() && stack.getItem() instanceof net.minecraft.world.item.BucketItem) {
-            if (!level.isClientSide) {
-                BlockEntity be = level.getBlockEntity(pos);
-                if (be instanceof LaunchPadBlockEntity launchPad) {
-                    net.minecraft.core.Direction face = hit.getDirection();
-                    launchPad.getCapability(
-                        net.minecraftforge.common.capabilities.ForgeCapabilities.FLUID_HANDLER,
-                        face).ifPresent(tankHandler -> {
-                        net.minecraftforge.fluids.FluidActionResult fluidResult =
-                            net.minecraftforge.fluids.FluidUtil.tryEmptyContainer(stack, tankHandler, Integer.MAX_VALUE, player, true);
-                        if (fluidResult.isSuccess()) {
-                            player.setItemInHand(hand, fluidResult.getResult());
-                        }
-                    });
-                }
-            }
-            return InteractionResult.sidedSuccess(level.isClientSide);
-        }
-
         if (!stack.isEmpty() && stack.getItem() instanceof CargoRocketItem cargoRocketItem) {
             if (level.isClientSide) return InteractionResult.SUCCESS;
             List<CargoRocketEntity> nearby = level.getEntitiesOfClass(

@@ -95,11 +95,6 @@ public class CargoRocketEntity extends Entity {
         if (nbt.contains("FuelTank")) fuelTank.readFromNBT(nbt.getCompound("FuelTank"));
         if (nbt.contains("CargoFluidTank")) cargoFluidTank.readFromNBT(nbt.getCompound("CargoFluidTank"));
         ContainerHelper.loadAllItems(nbt, inventory);
-        if (nbt.contains("BucketSlotsData")) {
-            net.minecraft.core.NonNullList<ItemStack> tmp = net.minecraft.core.NonNullList.withSize(2, ItemStack.EMPTY);
-            ContainerHelper.loadAllItems(nbt.getCompound("BucketSlotsData"), tmp);
-            for (int i = 0; i < 2; i++) bucketSlots.set(i, tmp.get(i));
-        }
     }
 
     @Override
@@ -116,9 +111,6 @@ public class CargoRocketEntity extends Entity {
         cargoFluidTank.writeToNBT(cargoTag);
         nbt.put("CargoFluidTank", cargoTag);
         ContainerHelper.saveAllItems(nbt, inventory);
-        CompoundTag bucketSaveTag = new CompoundTag();
-        ContainerHelper.saveAllItems(bucketSaveTag, bucketSlots);
-        nbt.put("BucketSlotsData", bucketSaveTag);
     }
 
     public void setTier(int tier) { entityData.set(TRACKED_TIER, tier); }
@@ -161,39 +153,6 @@ public class CargoRocketEntity extends Entity {
         return inventoryContainer;
     }
 
-    // 燃料バケツ・カーゴ流体バケツを置くための2スロット専用コンテナ([0]=燃料, [1]=カーゴ)。
-    // ここに満タンのバケツを置くとfuelTank/cargoFluidTankに注がれ空バケツに変わり、
-    // 空バケツを置くとタンクから汲み出して満タンバケツに変わる(RocketMenu側で処理)。
-    private final net.minecraft.core.NonNullList<ItemStack> bucketSlots =
-            net.minecraft.core.NonNullList.withSize(2, ItemStack.EMPTY);
-
-    private final net.minecraft.world.SimpleContainer bucketContainer = new net.minecraft.world.SimpleContainer(2) {
-        @Override public ItemStack getItem(int slot) { return bucketSlots.get(slot); }
-        @Override public void setItem(int slot, ItemStack stack) { bucketSlots.set(slot, stack); setChanged(); }
-        @Override public int getContainerSize() { return 2; }
-        @Override public boolean isEmpty() { return bucketSlots.stream().allMatch(ItemStack::isEmpty); }
-        @Override public ItemStack removeItem(int slot, int amount) {
-            ItemStack stack = bucketSlots.get(slot);
-            if (stack.isEmpty()) return ItemStack.EMPTY;
-            ItemStack split = stack.split(amount);
-            if (stack.isEmpty()) bucketSlots.set(slot, ItemStack.EMPTY);
-            setChanged();
-            return split;
-        }
-        @Override public ItemStack removeItemNoUpdate(int slot) {
-            ItemStack old = bucketSlots.get(slot);
-            bucketSlots.set(slot, ItemStack.EMPTY);
-            return old;
-        }
-        @Override public void clearContent() {
-            for (int i = 0; i < 2; i++) bucketSlots.set(i, ItemStack.EMPTY);
-        }
-    };
-
-    public net.minecraft.world.SimpleContainer getBucketSlots() {
-        return bucketContainer;
-    }
-
     @Override public boolean canBeCollidedWith() { return true; }
     @Override public boolean isPushable() { return false; }
     // プレイヤーが殴って攻撃できるようにする
@@ -233,10 +192,6 @@ public class CargoRocketEntity extends Entity {
         for (int i = 0; i < inventory.size(); i++) {
             spawnAtLocation(inventory.get(i));
             inventory.set(i, ItemStack.EMPTY);
-        }
-        for (int i = 0; i < bucketSlots.size(); i++) {
-            spawnAtLocation(bucketSlots.get(i));
-            bucketSlots.set(i, ItemStack.EMPTY);
         }
     }
 

@@ -24,12 +24,21 @@ public class LaunchPadMenu extends AbstractContainerMenu {
     // [0]=energy上位, [1]=energy下位, [2]=maxEnergy上位, [3]=maxEnergy下位
     private static final int DATA_COUNT = 4;
 
+    // ネットワーク経由でクライアントに同期された値のキャッシュ。
+    // set()が空実装だと、サーバーからのClientboundContainerSetDataPacketで送られてきた
+    // 値がクライアント側で捨てられ、getEnergy()がクライアント側のblockEntityを直接
+    // 読みに行ってしまい同期されない（BlockEntityの内部状態は毎tick自動で
+    // クライアントに送られるわけではないため）。set()で受け取った値をここに保持し、
+    // GUI表示はこちらを参照する。
+    private final int[] syncedValues = new int[DATA_COUNT];
+
     public LaunchPadMenu(int syncId, Inventory playerInventory, @Nullable LaunchPadBlockEntity blockEntity) {
         super(AdAstraCargoRockets.LAUNCH_PAD.getMenuType().get(), syncId);
         this.blockEntity = blockEntity;
 
         this.data = blockEntity != null ? new ContainerData() {
             @Override public int get(int i) {
+                // サーバー側でbroadcastChanges()が変更検知のために毎tick呼ぶ値。
                 return switch (i) {
                     case 0 -> blockEntity.getEnergy() >> 16;
                     case 1 -> blockEntity.getEnergy() & 0xFFFF;
@@ -38,7 +47,9 @@ public class LaunchPadMenu extends AbstractContainerMenu {
                     default -> 0;
                 };
             }
-            @Override public void set(int i, int v) {}
+            @Override public void set(int i, int v) {
+                if (i >= 0 && i < DATA_COUNT) syncedValues[i] = v;
+            }
             @Override public int getCount() { return DATA_COUNT; }
         } : new SimpleContainerData(DATA_COUNT);
         addDataSlots(data);
@@ -56,8 +67,8 @@ public class LaunchPadMenu extends AbstractContainerMenu {
 
     private int reconstruct(int high, int low) {
         // ContainerDataはshortで同期されるため符号拡張に注意
-        int h = data.get(high) & 0xFFFF;
-        int l = data.get(low)  & 0xFFFF;
+        int h = syncedValues[high] & 0xFFFF;
+        int l = syncedValues[low]  & 0xFFFF;
         return (h << 16) | l;
     }
 
