@@ -54,7 +54,7 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
         this.imageHeight = IMAGE_H;
-        this.inventoryLabelY = PLAYER_INV_Y - 10;
+        this.inventoryLabelY = PLAYER_INV_Y - 4;
     }
 
     @Override
