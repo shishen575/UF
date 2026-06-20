@@ -59,7 +59,7 @@ public class LaunchPadMenu extends AbstractContainerMenu {
         for (int row = 0; row < 3; row++)
             for (int col = 0; col < 9; col++)
                 addSlot(new Slot(playerInventory, col + row*9 + 9,
-                        8 + col*18, LaunchPadScreen.PLAYER_INV_Y + row*18));
+                        8 + col*18, LaunchPadScreen.PLAYER_INV_ROW_Y + row*18));
 
         for (int col = 0; col < 9; col++)
             addSlot(new Slot(playerInventory, col, 8 + col*18, LaunchPadScreen.HOTBAR_Y));

@@ -22,7 +22,11 @@ public class LaunchPadScreen extends AbstractContainerScreen<LaunchPadMenu> {
     private static final int HEADER_H = 17;
 
     static final int PLAYER_INV_Y = 84;
-    static final int HOTBAR_Y     = PLAYER_INV_Y + 58;
+    // vanillaのChestMenuの実際のスロット座標式を、blit先チャンク先頭からの相対位置に
+    // 変換すると、1行目は+14、ホットバーは+72になる(RocketScreenと同じ理由)。
+    // PLAYER_INV_Yはblitの基準位置(=描画用)であり、実際のスロットY座標はPLAYER_INV_ROW_Yを使う。
+    static final int PLAYER_INV_ROW_Y = PLAYER_INV_Y + 14;
+    static final int HOTBAR_Y     = PLAYER_INV_Y + 72;
     static final int IMAGE_H      = PLAYER_INV_Y + 96;
 
     private static final int INV_LBL_Y = PLAYER_INV_Y - 10;

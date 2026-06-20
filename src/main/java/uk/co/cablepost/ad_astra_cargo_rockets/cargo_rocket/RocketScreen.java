@@ -27,11 +27,18 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
 
     public static final int FUEL_GAUGE_X = 50;
     public static final int CARGO_GAUGE_X = 90;
-    public static final int GAUGE_Y = ROCKET_ROW_H + 12;
+    public static final int GAUGE_Y = ROCKET_ROW_H + 8;
     public static final int GAUGE_W = 30;
     public static final int GAUGE_H = 16;
-    public static final int PLAYER_INV_Y = ROCKET_ROW_H + 40;
-    public static final int HOTBAR_Y = PLAYER_INV_Y + 58;
+    // インベントリラベル(PLAYER_INV_Y - 10)がゲージ下端(GAUGE_Y + GAUGE_H = ROCKET_ROW_H+24)
+    // と重ならないよう、最低でもROCKET_ROW_H+34以上を確保する。
+    public static final int PLAYER_INV_Y = ROCKET_ROW_H + 36;
+    // vanillaのChestMenuの実際のスロット座標式(103+j*18+(rows-4)*18, 161+(rows-4)*18)を
+    // blit先のチャンク先頭からの相対位置に変換すると、1行目は+14、ホットバーは+72になる
+    // (テクスチャ内部の見た目とは別に、スロット自体の余白が14px分入っているため)。
+    // PLAYER_INV_Yはblitの基準位置(=描画用)であり、実際のスロットY座標はPLAYER_INV_ROW_Yを使う。
+    public static final int PLAYER_INV_ROW_Y = PLAYER_INV_Y + 14;
+    public static final int HOTBAR_Y = PLAYER_INV_Y + 72;
     public static final int IMAGE_H = PLAYER_INV_Y + 96;
 
     public RocketScreen(RocketMenu menu, Inventory playerInventory, Component title) {
