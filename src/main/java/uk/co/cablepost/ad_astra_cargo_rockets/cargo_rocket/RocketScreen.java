@@ -9,12 +9,14 @@ import net.minecraft.world.entity.player.Inventory;
 public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
 
     public static final int SLOT_Y = 18;
-    public static final int FLUID_SLOT_Y = 40;
+    // 上段インベントリの枠はy=17〜35を占めるため、"Fuel"/"Cargo"ラベル(GAUGE_Y-10)が
+    // それと重ならないよう、燃料/カーゴ行全体を十分下げて配置する。
+    public static final int FLUID_SLOT_Y = 50;
     public static final int FUEL_SLOT_X = 8;
     public static final int CARGO_SLOT_X = 26;
     public static final int FUEL_GAUGE_X = 50;
     public static final int CARGO_GAUGE_X = 90;
-    public static final int GAUGE_Y = 38;
+    public static final int GAUGE_Y = 48;
     public static final int GAUGE_W = 30;
     public static final int GAUGE_H = 16;
     public static final int PLAYER_INV_Y = 86;
@@ -32,9 +34,9 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         // 既存のLaunchPadScreenと同様、独自描画(専用テクスチャを使わない)
         int x = leftPos, y = topPos;
-        // バニラのコンテナGUIに近いグレー系の背景色
+        // バニラのチェストGUIと同じ配色: 背景全体を明るいグレー一色にし、
+        // スロットだけを暗いグレーにする（内側に別パネルを重ねない）。
         g.fill(x, y, x + imageWidth, y + imageHeight, 0xFFC6C6C6);
-        g.fill(x + 4, y + 4, x + imageWidth - 4, y + imageHeight - 4, 0xFF8B8B8B);
 
         drawSlotGrid(g, x, y);
         drawFluidGauges(g, x, y);

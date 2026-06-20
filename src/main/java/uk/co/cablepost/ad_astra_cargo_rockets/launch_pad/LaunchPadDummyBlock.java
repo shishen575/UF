@@ -76,6 +76,14 @@ public class LaunchPadDummyBlock extends Block implements EntityBlock {
         return InteractionResult.PASS;
     }
 
+    @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean moving) {
+        super.onPlace(state, level, pos, oldState, moving);
+        if (!level.isClientSide) {
+            level.updateNeighborsAt(pos, this);
+        }
+    }
+
     // 破壊時に中心ブロックも除去
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
@@ -83,6 +91,11 @@ public class LaunchPadDummyBlock extends Block implements EntityBlock {
             BlockPos center = findCenterPos(level, pos);
             if (center != null && level.getBlockState(center).getBlock() instanceof LaunchPadBlock) {
                 level.destroyBlock(center, true);
+            }
+            // プレイヤーが直接ダミーブロックを壊した場合も、その場所に接続していた
+            // パイプ・コンパレータ等へ明示的に更新を通知する。
+            if (!level.isClientSide) {
+                level.updateNeighborsAt(pos, newState.getBlock());
             }
         }
         super.onRemove(state, level, pos, newState, moving);
