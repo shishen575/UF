@@ -46,7 +46,10 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
         int x = leftPos, y = topPos;
         // ロケットの9スロット行: vanillaチェストのヘッダー+1行分の本物のテクスチャをそのまま使う
         g.blit(TEXTURE, x, y, 0, 0, imageWidth, ROCKET_ROW_H);
-        // Fuel/Cargoゲージ(このMOD独自の表示なので手描き)
+        // Fuel/Cargoゲージ(このMOD独自の表示)。ロケットの9スロット行とプレイヤー
+        // インベントリのblit領域の間に挟まる部分なので、ここだけは自前で背景を塗る
+        // 必要がある(塗らないとワールドが透けて見える「真ん中が抜けた」状態になる)。
+        g.fill(x, y + ROCKET_ROW_H, x + imageWidth, y + PLAYER_INV_Y, 0xFFC6C6C6);
         drawFluidGauges(g, x, y);
         // プレイヤーインベントリ+ホットバー: vanillaチェストGUIと共通の固定96px領域を
         // そのままblitする(行数に関わらず常にこの領域の見た目は同じ)

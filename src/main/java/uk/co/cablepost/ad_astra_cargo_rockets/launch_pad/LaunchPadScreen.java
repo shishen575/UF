@@ -44,7 +44,10 @@ public class LaunchPadScreen extends AbstractContainerScreen<LaunchPadMenu> {
 
         // ヘッダー部分: vanillaチェストと同じ本物のテクスチャをそのまま使う
         g.blit(TEXTURE, ox, oy, 0, 0, imageWidth, HEADER_H);
-        // エネルギー情報エリア(このMOD独自の表示なので手描き)
+        // エネルギー情報エリア(このMOD独自の表示)。ヘッダーとプレイヤーインベントリの
+        // blit領域の間に挟まる部分なので、ここだけは自前で背景を塗る必要がある
+        // (塗らないとワールドが透けて見える「真ん中が抜けた」状態になる)。
+        g.fill(ox, oy + HEADER_H, ox + imageWidth, oy + PLAYER_INV_Y, 0xFFC6C6C6);
         drawEnergyArea(g, ox, oy);
         // プレイヤーインベントリ+ホットバー: vanillaチェストGUIと共通の固定96px領域を
         // そのままblitする
