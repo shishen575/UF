@@ -250,10 +250,33 @@ public class CargoRocketEntity extends Entity {
         spawnAtLocation(new ItemStack(Items.DIRT));
     }
 
+    /**
+     * ロケットが破壊される位置周辺に着地しているランチパッドがあれば、
+     * パイプ・ホッパーの委譲先（getRocket()の戻り値）が無くなることになるため、
+     * そのランチパッドとその周囲ブロックに更新を通知する。
+     */
+    private void notifyAdjacentLaunchPad() {
+        if (level().isClientSide) return;
+        BlockPos pos = blockPosition();
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dy = -2; dy <= 2; dy++) {
+                for (int dz = -2; dz <= 2; dz++) {
+                    BlockPos check = pos.offset(dx, dy, dz);
+                    if (level().getBlockEntity(check) instanceof uk.co.cablepost.ad_astra_cargo_rockets.launch_pad.LaunchPadBlockEntity lp
+                            && lp.getRocket() == this) {
+                        level().updateNeighborsAt(check, level().getBlockState(check).getBlock());
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public boolean hurt(net.minecraft.world.damagesource.DamageSource source, float amount) {
         if (level().isClientSide) return false;
         if (isInvulnerableTo(source)) return false;
+        notifyAdjacentLaunchPad();
         dropInventory();
         dropSelf();
         discard();
@@ -262,6 +285,7 @@ public class CargoRocketEntity extends Entity {
 
     public void killRocket() {
         if (!level().isClientSide) {
+            notifyAdjacentLaunchPad();
             dropInventory();
             dropSelf();
             discard();
@@ -356,7 +380,7 @@ public class CargoRocketEntity extends Entity {
                 e -> e.isAlive() && e.getId() != getId() && "grounded".equals(e.getFlightState()));
         if (!below.isEmpty()) {
             level().explode(this, getX(), getY() - 0.5, getZ(), 5, Level.ExplosionInteraction.MOB);
-            dropInventory(); dropSelf(); kill(); return;
+            notifyAdjacentLaunchPad(); dropInventory(); dropSelf(); kill(); return;
         }
 
         Integer highestBlockY = null;
@@ -392,7 +416,7 @@ public class CargoRocketEntity extends Entity {
                 e -> e.isAlive() && e.getId() != getId());
         if (!above.isEmpty()) {
             level().explode(this, getX(), getY() - 4, getZ(), 5, Level.ExplosionInteraction.MOB);
-            dropInventory(); dropSelf(); kill(); return;
+            notifyAdjacentLaunchPad(); dropInventory(); dropSelf(); kill(); return;
         }
 
         boolean clear = true;

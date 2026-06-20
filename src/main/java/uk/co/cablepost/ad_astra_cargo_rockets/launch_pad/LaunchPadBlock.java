@@ -187,6 +187,9 @@ public class LaunchPadBlock extends BaseEntityBlock {
                     entity.setTier(cargoRocketItem.tier);
                     level.addFreshEntity(entity);
                     if (!player.getAbilities().instabuild) stack.shrink(1);
+                    // ロケット設置でランチパッドのパイプ・ホッパー委譲先が変わるため、
+                    // 周囲のコンパレータ・パイプ等に更新を通知する。
+                    level.updateNeighborsAt(pos, this);
                 }
             }
             return InteractionResult.CONSUME;
