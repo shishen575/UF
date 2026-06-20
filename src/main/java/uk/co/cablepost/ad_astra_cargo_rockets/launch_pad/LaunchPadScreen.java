@@ -3,27 +3,29 @@ package uk.co.cablepost.ad_astra_cargo_rockets.launch_pad;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
  * ランチパッドのGUI画面。
  * v1.2.4でアイテム/燃料/カーゴ流体はロケット自身のGUIに移管されたため、
  * ここではエネルギー残量のみを表示する。
- * vanillaの本物のテクスチャ(generic_54.png)を部分blitする方式は、自前で描く
- * エネルギー表示エリアとの継ぎ目に縁の不連続が出てしまうため不採用とし、
- * パネル全体を一枚の継続した塗りつぶしで描く（外枠+内側パネル+スロット枠）。
+ * 背景・プレイヤーインベントリの枠は手描きの塗りつぶしではなく、vanillaのチェスト等と
+ * 共通の本物のコンテナテクスチャ(generic_54.png)をそのままblitして使う（RocketScreenと同様）。
  */
 public class LaunchPadScreen extends AbstractContainerScreen<LaunchPadMenu> {
 
+    private static final ResourceLocation TEXTURE =
+            new ResourceLocation("textures/gui/container/generic_54.png");
+
+    // ヘッダーのみ(チェストスロット0行分)の本物のテクスチャ領域
+    private static final int HEADER_H = 17;
+
     static final int PLAYER_INV_Y = 84;
-    static final int HOTBAR_Y     = 142;
-    static final int IMAGE_H      = 164;
+    static final int HOTBAR_Y     = PLAYER_INV_Y + 58;
+    static final int IMAGE_H      = PLAYER_INV_Y + 96;
 
-    private static final int BLANK_TOP = 24;
-    private static final int INV_LBL_Y = 74;
-
-    private static final int COL_BG    = 0xFFC6C6C6;
-    private static final int COL_DARK  = 0xFF555555;
+    private static final int INV_LBL_Y = PLAYER_INV_Y - 10;
 
     public LaunchPadScreen(LaunchPadMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -39,15 +41,27 @@ public class LaunchPadScreen extends AbstractContainerScreen<LaunchPadMenu> {
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         int ox = (width  - imageWidth)  / 2;
         int oy = (height - imageHeight) / 2;
-        int r  = ox + imageWidth;
 
-        // パネル全体を一枚の継続した塗りつぶしにすることで、縁の不連続を無くす。
-        g.fill(ox, oy, r, oy + IMAGE_H, COL_DARK);
-        g.fill(ox+1, oy+1, r-1, oy+IMAGE_H-1, COL_BG);
-        g.fill(ox+1, oy+16, r-1, oy+17, COL_DARK);
+        // ヘッダー部分: vanillaチェストと同じ本物のテクスチャをそのまま使う
+        g.blit(TEXTURE, ox, oy, 0, 0, imageWidth, HEADER_H);
+        // エネルギー情報エリア(このMOD独自の表示)。ヘッダーとプレイヤーインベントリの
+        // blit領域の間に挟まる部分なので、ここだけは自前で背景を塗る必要がある
+        // (塗らないとワールドが透けて見える「真ん中が抜けた」状態になる)。
+        g.fill(ox, oy + HEADER_H, ox + imageWidth, oy + PLAYER_INV_Y, 0xFFC6C6C6);
+        // 上下のblit領域との継ぎ目が目立たないよう、左右に枠線を通して縦の縁を繋げる。
+        g.fill(ox, oy + HEADER_H, ox + 7, oy + PLAYER_INV_Y, 0xFF8B8B8B);
+        g.fill(ox + imageWidth - 7, oy + HEADER_H, ox + imageWidth, oy + PLAYER_INV_Y, 0xFF8B8B8B);
+        g.fill(ox, oy + HEADER_H, ox + imageWidth, oy + HEADER_H + 1, 0xFF373737);
+        g.fill(ox, oy + PLAYER_INV_Y - 1, ox + imageWidth, oy + PLAYER_INV_Y, 0xFF373737);
+        drawEnergyArea(g, ox, oy);
+        // プレイヤーインベントリ+ホットバー: vanillaチェストGUIと共通の固定96px領域を
+        // そのままblitする
+        g.blit(TEXTURE, ox, oy + PLAYER_INV_Y, 0, 126, imageWidth, 96);
+    }
 
-        int barH    = INV_LBL_Y - BLANK_TOP - 8;
-        int barTopY = oy + BLANK_TOP + 4;
+    private void drawEnergyArea(GuiGraphics g, int ox, int oy) {
+        int barH    = PLAYER_INV_Y - HEADER_H - 8;
+        int barTopY = oy + HEADER_H + 4;
         int SEGMENTS = 10;
 
         // エネルギーバー（右端）10分割
@@ -55,21 +69,18 @@ public class LaunchPadScreen extends AbstractContainerScreen<LaunchPadMenu> {
                 menu.getEnergy(), menu.getMaxEnergy(), 0xFFDD2200, SEGMENTS);
 
         int tx = ox + 8;
-        int ty = oy + BLANK_TOP + 4;
+        int ty = oy + HEADER_H + 4;
         g.drawString(font, "Energy:", tx, ty, 0x404040, false);
         g.drawString(font, formatVal(menu.getEnergy()) + " / " + formatVal(menu.getMaxEnergy()) + " FE",
                 tx, ty + 10, 0x404040, false);
         g.drawString(font, "Fuel and cargo are now stored", tx, ty + 24, 0x707070, false);
         g.drawString(font, "in the rocket itself.", tx, ty + 34, 0x707070, false);
-
-        drawSlotGrid(g, ox+8, oy+PLAYER_INV_Y, 9, 3);
-        drawSlotGrid(g, ox+8, oy+HOTBAR_Y,     9, 1);
     }
 
     /** 10分割セグメントバー（下から上に充填、セグメント間に区切り線） */
     private void renderSegmentBar(GuiGraphics g, int barX, int barY, int barW, int barH,
                                    int value, int max, int color, int segments) {
-        g.fill(barX-1, barY-1, barX+barW+1, barY+barH+1, COL_DARK);
+        g.fill(barX-1, barY-1, barX+barW+1, barY+barH+1, 0xFF555555);
         g.fill(barX, barY, barX+barW, barY+barH, 0xFF1A1A1A);
 
         if (max <= 0) return;
@@ -90,20 +101,6 @@ public class LaunchPadScreen extends AbstractContainerScreen<LaunchPadMenu> {
         return String.valueOf(v);
     }
 
-    private void drawSlotGrid(GuiGraphics g, int x, int y, int cols, int rows) {
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                drawSlotFrame(g, x + col * 18, y + row * 18);
-            }
-        }
-    }
-
-    /** バニラのチェストGUIのスロットと同じ配色: 単色の暗い枠線 + 中間グレーの中身。 */
-    private void drawSlotFrame(GuiGraphics g, int sx, int sy) {
-        g.fill(sx - 1, sy - 1, sx + 17, sy + 17, 0xFF373737);
-        g.fill(sx, sy, sx + 16, sy + 16, 0xFF8B8B8B);
-    }
-
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
         g.drawString(font, title,                titleLabelX,     titleLabelY, 0x404040, false);
@@ -121,8 +118,8 @@ public class LaunchPadScreen extends AbstractContainerScreen<LaunchPadMenu> {
     private void renderBarTooltip(GuiGraphics g, int mouseX, int mouseY) {
         int ox = (width  - imageWidth)  / 2;
         int oy = (height - imageHeight) / 2;
-        int barH   = INV_LBL_Y - BLANK_TOP - 8;
-        int barTopY = oy + BLANK_TOP + 4;
+        int barH   = PLAYER_INV_Y - HEADER_H - 8;
+        int barTopY = oy + HEADER_H + 4;
 
         int eBarX = ox + imageWidth - 22;
         if (isMouseOverBar(mouseX, mouseY, eBarX, barTopY, 12, barH)) {
