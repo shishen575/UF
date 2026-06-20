@@ -23,12 +23,20 @@ public class RocketMenu extends net.minecraft.world.inventory.AbstractContainerM
     // [0]=fuel, [1]=maxFuel, [2]=cargo, [3]=maxCargo
     private static final int DATA_COUNT = 4;
 
+    // ネットワーク経由でクライアントに同期された値のキャッシュ。
+    // FluidTankはSynchedEntityDataの対象外でエンティティとして自動同期されないため、
+    // クライアント側のrocket.fuelTank等を直接読んでも更新されない。ContainerDataの
+    // set()で受け取った同期値をここに保持し、GUI表示はこちらを参照する。
+    private final int[] syncedValues = new int[DATA_COUNT];
+
     public RocketMenu(int syncId, Inventory playerInventory, @Nullable CargoRocketEntity rocket) {
         super(AdAstraCargoRockets.CARGO_ROCKET_MENU.getMenuType().get(), syncId);
         this.rocket = rocket;
 
         this.data = rocket != null ? new ContainerData() {
             @Override public int get(int i) {
+                // サーバー側ではbroadcastChanges()が変更検知のために毎tick呼ぶので、
+                // ここは常にロケットの実値を返す（クライアント側では直接呼ばれない）。
                 return switch (i) {
                     case 0 -> rocket.fuelTank.getFluidAmount();
                     case 1 -> rocket.fuelTank.getCapacity();
@@ -37,7 +45,9 @@ public class RocketMenu extends net.minecraft.world.inventory.AbstractContainerM
                     default -> 0;
                 };
             }
-            @Override public void set(int i, int v) {}
+            @Override public void set(int i, int v) {
+                if (i >= 0 && i < DATA_COUNT) syncedValues[i] = v;
+            }
             @Override public int getCount() { return DATA_COUNT; }
         } : new SimpleContainerData(DATA_COUNT);
         addDataSlots(data);
@@ -62,10 +72,10 @@ public class RocketMenu extends net.minecraft.world.inventory.AbstractContainerM
             addSlot(new Slot(playerInventory, col, 8 + col * 18, RocketScreen.HOTBAR_Y));
     }
 
-    public int getFuel()    { return data.get(0); }
-    public int getMaxFuel() { return data.get(1); }
-    public int getCargoFluid()    { return data.get(2); }
-    public int getMaxCargoFluid() { return data.get(3); }
+    public int getFuel()    { return syncedValues[0]; }
+    public int getMaxFuel() { return syncedValues[1]; }
+    public int getCargoFluid()    { return syncedValues[2]; }
+    public int getMaxCargoFluid() { return syncedValues[3]; }
 
     @Override public boolean stillValid(Player p) {
         return rocket != null && rocket.isAlive() && "grounded".equals(rocket.getFlightState());

@@ -106,12 +106,17 @@ public class LaunchPadBlock extends BaseEntityBlock {
         super.onPlace(state, level, pos, oldState, moving);
         if (level.isClientSide) return;
         placeDummies(level, pos);
+        // ダミーブロック設置で中心ブロックの周囲が変化するため、コンパレータ・パイプ等が
+        // すぐに追従できるよう明示的に近傍ブロックへ更新を通知する。
+        level.updateNeighborsAt(pos, this);
     }
 
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
         if (!state.is(newState.getBlock())) {
             removeDummies(level, pos);
+            // 破壊によって周囲のダミーブロックが無くなるため、近傍ブロックへ更新を通知する。
+            level.updateNeighborsAt(pos, state.getBlock());
         }
         super.onRemove(state, level, pos, newState, moving);
     }

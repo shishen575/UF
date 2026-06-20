@@ -32,6 +32,7 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         // 既存のLaunchPadScreenと同様、独自描画(専用テクスチャを使わない)
         int x = leftPos, y = topPos;
+        // バニラのコンテナGUIに近いグレー系の背景色
         g.fill(x, y, x + imageWidth, y + imageHeight, 0xFFC6C6C6);
         g.fill(x + 4, y + 4, x + imageWidth - 4, y + imageHeight - 4, 0xFF8B8B8B);
 
