@@ -120,6 +120,16 @@ public class LaunchPadBlockEntity extends AbstractMachineBlockEntity implements 
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
+    /**
+     * レンダリング範囲をブロック自体より広げる。モデルの実寸が3x3マルチブロックの
+     * 中心ブロックの当たり判定より大きいため、デフォルトのバウンディングボックスでは
+     * 中心ブロックを直接見ていない角度・距離からだとフラスタムカリングで描画が消えてしまう。
+     */
+    @Override
+    public AABB getRenderBoundingBox() {
+        return new AABB(worldPosition).inflate(2.0, 2.0, 2.0);
+    }
+
     @Override
     public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
