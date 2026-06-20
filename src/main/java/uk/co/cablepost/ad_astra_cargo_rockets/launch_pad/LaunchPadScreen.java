@@ -48,11 +48,12 @@ public class LaunchPadScreen extends AbstractContainerScreen<LaunchPadMenu> {
         // blit領域の間に挟まる部分なので、ここだけは自前で背景を塗る必要がある
         // (塗らないとワールドが透けて見える「真ん中が抜けた」状態になる)。
         g.fill(ox, oy + HEADER_H, ox + imageWidth, oy + PLAYER_INV_Y, 0xFFC6C6C6);
-        // 上下のblit領域との継ぎ目が目立たないよう、左右に枠線を通して縦の縁を繋げる。
-        g.fill(ox, oy + HEADER_H, ox + 7, oy + PLAYER_INV_Y, 0xFF8B8B8B);
-        g.fill(ox + imageWidth - 7, oy + HEADER_H, ox + imageWidth, oy + PLAYER_INV_Y, 0xFF8B8B8B);
-        g.fill(ox, oy + HEADER_H, ox + imageWidth, oy + HEADER_H + 1, 0xFF373737);
-        g.fill(ox, oy + PLAYER_INV_Y - 1, ox + imageWidth, oy + PLAYER_INV_Y, 0xFF373737);
+        // テクスチャ部分の縁にある明るいハイライト線+右端の暗い線を、自前で塗った部分にも
+        // 通すことで、blit領域と地続きの同じ幅の枠に見えるようにする。
+        g.fill(ox, oy + HEADER_H, ox + imageWidth, oy + HEADER_H + 1, 0xFFFFFFFF);
+        g.fill(ox, oy + PLAYER_INV_Y - 1, ox + imageWidth, oy + PLAYER_INV_Y, 0xFFFFFFFF);
+        g.fill(ox, oy + HEADER_H, ox + 1, oy + PLAYER_INV_Y, 0xFFFFFFFF);
+        g.fill(ox + imageWidth - 1, oy + HEADER_H, ox + imageWidth, oy + PLAYER_INV_Y, 0xFF555555);
         drawEnergyArea(g, ox, oy);
         // プレイヤーインベントリ+ホットバー: vanillaチェストGUIと共通の固定96px領域を
         // そのままblitする
