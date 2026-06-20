@@ -109,6 +109,11 @@ public class LaunchPadBlockEntity extends AbstractMachineBlockEntity implements 
             itemHandlerDelegate = LazyOptional.of(this::getDelegatedItemHandler);
             fuelHandlerDelegate = LazyOptional.of(() -> getDelegatedFluidHandler(Direction.DOWN));
             cargoHandlerDelegate = LazyOptional.of(() -> getDelegatedFluidHandler(Direction.UP));
+            // 委譲先のロケットが変わった = パイプ/ホッパー/コンパレータから見える内容量が
+            // 変化したタイミングなので、周囲ブロックに更新を通知する。
+            if (level != null) {
+                level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
+            }
         }
     }
 
