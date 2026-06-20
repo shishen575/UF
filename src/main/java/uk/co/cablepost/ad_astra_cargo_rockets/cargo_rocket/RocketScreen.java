@@ -8,38 +8,47 @@ import net.minecraft.world.entity.player.Inventory;
 
 /**
  * ロケットのインベントリ・燃料/カーゴ流体タンクを表示するGUI画面。
- * 背景・スロットの枠は手描きの塗りつぶしではなく、vanillaのチェスト等と共通の本物の
- * コンテナテクスチャ(generic_54.png)をそのままblitして使う。これによりvanillaの
- * インベントリ画面と完全に同じ質感・配色になる。
- * vanillaのChestScreenと同じ構造: 「ヘッダー+チェスト行数分のスロット」と
- * 「プレイヤーインベントリ+ホットバー(常に固定の96px領域)」の2回のblitで構成される。
- * ロケット自身の9スロットは「1行のチェスト」として扱い、その下に独自のFuel/Cargo
- * ゲージ表示エリアを挟んでからプレイヤーインベントリ部分を続ける。
+ *
+ * 設計方針:
+ * vanillaの3行チェスト(generic_54.png)のテクスチャを「ヘッダー+スロット3行分」まで
+ * 一度にblitして丸ごと使う。これにより枠線・背景・スロットの穴がすべてテクスチャ由来に
+ * なり、自前で枠線を描く必要がなくなる（=ツギハギ感ゼロ）。
+ *
+ * ロケットの9スロットは上1行だけを使い、残りの下2行分のスロットの穴の上には
+ * Fuel/Cargoの流体メーターを重ねて描画して隠す。
+ * その下にvanilla共通のプレイヤーインベントリ+ホットバー(96px)をblitする。
  */
 public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
 
     private static final ResourceLocation TEXTURE =
             new ResourceLocation("textures/gui/container/generic_54.png");
 
-    public static final int SLOT_Y = 18;
-    // ヘッダー17px + チェスト1行18px分の本物のテクスチャ領域
-    private static final int ROCKET_ROW_H = 1 * 18 + 17;
+    // テクスチャ内のレイアウト定数
+    private static final int HEADER_H = 17;          // ヘッダー高さ
+    private static final int SLOT_ROW_H = 18;         // スロット1行の高さ
 
+    // ヘッダー + スロット3行分をまとめてblitする領域(=3行チェスト相当)
+    private static final int CHEST_AREA_H = HEADER_H + SLOT_ROW_H * 3; // 17 + 54 = 71
+
+    // ロケットスロット(上1行)の実描画位置
+    public static final int SLOT_Y = HEADER_H + 1;   // 18
+
+    // 下2行分のスロット穴をメーターエリアとして使う。その先頭Y(テクスチャ先頭からの相対)
+    private static final int METER_AREA_Y = HEADER_H + SLOT_ROW_H; // 35
+
+    // Fuel/Cargoメーターの配置(メーターエリア内)
     public static final int FUEL_GAUGE_X = 50;
-    public static final int CARGO_GAUGE_X = 90;
-    public static final int GAUGE_Y = ROCKET_ROW_H + 8;
-    public static final int GAUGE_W = 30;
-    public static final int GAUGE_H = 16;
-    // インベントリラベル(PLAYER_INV_Y - 10)がゲージ下端(GAUGE_Y + GAUGE_H = ROCKET_ROW_H+24)
-    // と重ならないよう、最低でもROCKET_ROW_H+34以上を確保する。
-    public static final int PLAYER_INV_Y = ROCKET_ROW_H + 36;
-    // vanillaのChestMenuの実際のスロット座標式(103+j*18+(rows-4)*18, 161+(rows-4)*18)を
-    // blit先のチャンク先頭からの相対位置に変換すると、1行目は+14、ホットバーは+72になる
-    // (テクスチャ内部の見た目とは別に、スロット自体の余白が14px分入っているため)。
-    // PLAYER_INV_Yはblitの基準位置(=描画用)であり、実際のスロットY座標はPLAYER_INV_ROW_Yを使う。
+    public static final int CARGO_GAUGE_X = 100;
+    public static final int GAUGE_Y = METER_AREA_Y + 10;
+    public static final int GAUGE_W = 26;
+    public static final int GAUGE_H = 20;
+
+    // プレイヤーインベントリのblit基準位置
+    public static final int PLAYER_INV_Y = CHEST_AREA_H;       // 71
+    // 実際のプレイヤーインベントリスロットのY(vanilla準拠で+14)
     public static final int PLAYER_INV_ROW_Y = PLAYER_INV_Y + 14;
     public static final int HOTBAR_Y = PLAYER_INV_Y + 72;
-    public static final int IMAGE_H = PLAYER_INV_Y + 96;
+    public static final int IMAGE_H = PLAYER_INV_Y + 96;       // 167
 
     public RocketScreen(RocketMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -51,42 +60,40 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         int x = leftPos, y = topPos;
-        // ロケットの9スロット行: vanillaチェストのヘッダー+1行分の本物のテクスチャをそのまま使う
-        g.blit(TEXTURE, x, y, 0, 0, imageWidth, ROCKET_ROW_H);
-        // Fuel/Cargoゲージ(このMOD独自の表示)。ロケットの9スロット行とプレイヤー
-        // インベントリのblit領域の間に挟まる部分なので、ここだけは自前で背景を塗る
-        // 必要がある(塗らないとワールドが透けて見える「真ん中が抜けた」状態になる)。
-        g.fill(x, y + ROCKET_ROW_H, x + imageWidth, y + PLAYER_INV_Y, 0xFFC6C6C6);
-        // テクスチャ部分の縁にある明るいハイライト線+右端の暗い線を、自前で塗った部分にも
-        // 通すことで、blit領域と地続きの同じ幅の枠に見えるようにする。
-        // 上側の白いハイライト（ロケットスロットとの接合部）
-        g.fill(x, y + ROCKET_ROW_H - 1, x + imageWidth, y + ROCKET_ROW_H, 0xFFFFFFFF);
+
+        // ヘッダー+スロット3行分(=3行チェスト相当)を丸ごとblit。
+        // 枠線・背景・スロットの穴がすべてテクスチャから来るので、自前の枠線描画は不要。
+        g.blit(TEXTURE, x, y, 0, 0, imageWidth, CHEST_AREA_H);
+
+        // 下2行分のスロット穴の上にメーターを重ねて隠し、Fuel/Cargoを表示する。
         drawFluidGauges(g, x, y);
-        // プレイヤーインベントリ+ホットバー: vanillaチェストGUIと共通の固定96px領域を
-        // そのままblitする(行数に関わらず常にこの領域の見た目は同じ)
+
+        // プレイヤーインベントリ+ホットバー: vanilla共通の固定96px領域をそのままblit。
         g.blit(TEXTURE, x, y + PLAYER_INV_Y, 0, 126, imageWidth, 96);
-        // 左右の縦線はプレイヤーインベントリのblitの後に描画する。
-        // 先に描くとblitテクスチャに上書きされて下端まで届かなくなるため。
-        // 左側の白いハイライト（全体を貫く、UI最下端まで）
-        g.fill(x, y + ROCKET_ROW_H - 1, x + 1, y + imageHeight, 0xFFFFFFFF);
-        // 右側の暗い線（全体を貫く、UI最下端まで）
-        g.fill(x + imageWidth - 1, y + ROCKET_ROW_H - 1, x + imageWidth, y + imageHeight, 0xFF555555);
     }
 
     private void drawFluidGauges(GuiGraphics g, int x, int y) {
         int fuel = menu.getFuel(), maxFuel = Math.max(1, menu.getMaxFuel());
         int cargo = menu.getCargoFluid(), maxCargo = Math.max(1, menu.getMaxCargoFluid());
 
-        g.fill(x + FUEL_GAUGE_X, y + GAUGE_Y, x + FUEL_GAUGE_X + GAUGE_W, y + GAUGE_Y + GAUGE_H, 0xFF1A1A1A);
-        int fuelFillW = (int) ((long) GAUGE_W * fuel / maxFuel);
-        g.fill(x + FUEL_GAUGE_X, y + GAUGE_Y, x + FUEL_GAUGE_X + fuelFillW, y + GAUGE_Y + GAUGE_H, 0xFFE05A2B);
-
-        g.fill(x + CARGO_GAUGE_X, y + GAUGE_Y, x + CARGO_GAUGE_X + GAUGE_W, y + GAUGE_Y + GAUGE_H, 0xFF1A1A1A);
-        int cargoFillW = (int) ((long) GAUGE_W * cargo / maxCargo);
-        g.fill(x + CARGO_GAUGE_X, y + GAUGE_Y, x + CARGO_GAUGE_X + cargoFillW, y + GAUGE_Y + GAUGE_H, 0xFF4AA8E0);
+        drawGauge(g, x + FUEL_GAUGE_X, y + GAUGE_Y, fuel, maxFuel, 0xFFE05A2B);
+        drawGauge(g, x + CARGO_GAUGE_X, y + GAUGE_Y, cargo, maxCargo, 0xFF4AA8E0);
 
         g.drawString(font, "Fuel", x + FUEL_GAUGE_X, y + GAUGE_Y - 10, 0xFF404040, false);
         g.drawString(font, "Cargo", x + CARGO_GAUGE_X, y + GAUGE_Y - 10, 0xFF404040, false);
+    }
+
+    /** 縦型ゲージ(下から上に充填) + 暗い枠で囲む */
+    private void drawGauge(GuiGraphics g, int gx, int gy, int value, int max, int fillColor) {
+        // 枠(暗い縁)
+        g.fill(gx - 1, gy - 1, gx + GAUGE_W + 1, gy + GAUGE_H + 1, 0xFF373737);
+        // 背景(空のタンク)
+        g.fill(gx, gy, gx + GAUGE_W, gy + GAUGE_H, 0xFF1A1A1A);
+        // 充填(下から上へ)
+        int fillH = (int) ((long) GAUGE_H * value / max);
+        if (fillH > 0) {
+            g.fill(gx, gy + GAUGE_H - fillH, gx + GAUGE_W, gy + GAUGE_H, fillColor);
+        }
     }
 
     @Override
