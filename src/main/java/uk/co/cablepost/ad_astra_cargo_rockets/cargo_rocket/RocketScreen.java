@@ -57,11 +57,12 @@ public class RocketScreen extends AbstractContainerScreen<RocketMenu> {
         // インベントリのblit領域の間に挟まる部分なので、ここだけは自前で背景を塗る
         // 必要がある(塗らないとワールドが透けて見える「真ん中が抜けた」状態になる)。
         g.fill(x, y + ROCKET_ROW_H, x + imageWidth, y + PLAYER_INV_Y, 0xFFC6C6C6);
-        // テクスチャ部分の縁にある明るいハイライト線+右端の暗い線を、自前で塗った部分にも
-        // 通すことで、blit領域と地続きの同じ幅の枠に見えるようにする。
+        // Vanilla テクスチャの統一された外枠線を、中間部分まで拡張する
+        // 上側の白いハイライト(頂部から連続)
         g.fill(x, y + ROCKET_ROW_H, x + imageWidth, y + ROCKET_ROW_H + 1, 0xFFFFFFFF);
-        g.fill(x, y + PLAYER_INV_Y - 1, x + imageWidth, y + PLAYER_INV_Y, 0xFFFFFFFF);
+        // 左側の白いハイライト(全体)
         g.fill(x, y + ROCKET_ROW_H, x + 1, y + PLAYER_INV_Y, 0xFFFFFFFF);
+        // 右側の暗い線(全体)
         g.fill(x + imageWidth - 1, y + ROCKET_ROW_H, x + imageWidth, y + PLAYER_INV_Y, 0xFF555555);
         drawFluidGauges(g, x, y);
         // プレイヤーインベントリ+ホットバー: vanillaチェストGUIと共通の固定96px領域を
