@@ -6,12 +6,40 @@ I'm new to modding. This mod may contain many bugs. I would really appreciate it
 This mod adds cargo rockets to *Ad Astra* and, when used in conjunction with *CC:tweaked*, allows for the automation of interplanetary item transport.
 
 # Added Features
+## [v1.3] Bug fixes: GUI sync, Scanner rename, Jade display, block updates, bucket removal
+**This is a breaking change.** Filling/draining the rocket's fuel and cargo tanks with a bucket
+(both by right-clicking the launchpad and via the dedicated bucket slots in the rocket's inventory
+screen) has been **removed**. The tanks are now read-only from the player's perspective; the only
+way to fill or drain them is via pipes/hoppers connected to the launchpad while a rocket is grounded
+on it, or from a script via the Lua API. This was removed to keep the tank's contents fully
+automation-driven and avoid ambiguity between the launchpad's right-click bucket behavior and the
+rocket's own bucket slots.
+<br>Fixed the rocket's inventory screen (fuel/cargo gauges) and the launchpad's energy bar not
+updating live on the client — both menus' synced data was being silently discarded due to an empty
+`ContainerData.set()` implementation, so the GUI kept reading the client's own (stale) copy of the
+block entity/entity instead of the value actually being broadcast by the server.
+<br>Fixed the Rocket Scanner's rename text field being overwritten mid-typing: the GUI re-requests
+the rocket list every 2 seconds, and the previous code reset the name field's text on every refresh
+even when the same rocket was still selected, wiping out whatever you'd typed before you could click
+"Rename".
+<br>Fixed block-info overlay mods (e.g. Jade) showing only one of the two fluid tanks: those tools
+typically query the fluid capability without specifying a side, which the launchpad's capability
+routing treated as "not the bottom face" and always resolved to the cargo tank, hiding the fuel tank
+entirely. A side-less query now exposes both tanks.
+<br>The launchpad and its corner/edge placeholder blocks now send explicit block updates to all
+neighbors (not just face-adjacent ones) when placed, broken, or when the rocket sitting on the pad
+changes (placed, removed, launched, landed, or destroyed) — comparators and pipe networks (including
+ones attached to a diagonal corner block of the 3×3 footprint) now react immediately instead of only
+on the next unrelated neighbor change.
+<br>Various GUI polish: rocket/launchpad inventory slots now render with a chest-like recessed
+bevel instead of a flat outline, the rocket screen's "Fuel"/"Cargo" labels no longer overlap the
+inventory slot row above them, and the rocket screen's background no longer has a mismatched darker
+inset panel.
 ## [v1.2.4] Rocket inventory GUI, pipes/hoppers now sync with the grounded rocket, grounded-time wait
 **This is a breaking change.** The rocket itself now has its own inventory (9 slots) and its own
 fuel/cargo fluid tanks — these are the *only* place the items/fuel/cargo actually live, the
 launchpad itself holds nothing. Right-click a grounded rocket to open its inventory screen, where
-you can place items directly, and drop a fuel/cargo fluid bucket into the dedicated slot to fill the
-tank (or an empty bucket to drain it back out).
+you can place items directly.
 <br>The launchpad's pipe connections and hopper-accessible slots are still there exactly as before
 — but instead of holding their own contents, they now act as a direct window into whichever rocket
 is currently grounded on the pad. Pipe fuel into the BOTTOM face, or pipe cargo fluid into the
@@ -86,9 +114,9 @@ what's in the pipes' destination.
 - Connect fluid pipes to the **top or side** faces to transport cargo liquids.
 - Hoppers (or any item-transport mod) pointed at the launchpad insert into / extract from the
   rocket's inventory directly.
-- You can also right-click the launchpad faces with a bucket to fill/drain the rocket's tanks the
-  same way you would a normal tank, or right-click the rocket itself to use its inventory screen
-  with buckets.
+- **[v1.3]** Filling/draining the tanks with a bucket by hand (either at the launchpad or from the
+  rocket's own inventory screen) is no longer supported — pipes, hoppers, and the Lua API are the
+  only ways to move fuel/cargo fluid in or out.
 - If no rocket is grounded on the pad — empty, mid-flight, or still descending — these connections
   have nowhere to deliver to and simply accept nothing, the same as an unconnected pipe.
 
@@ -320,9 +348,9 @@ Selecting a rocket from the list shows:
 - **Fuel / Cargo fluid** — **[v1.2.4]** the current and max amount in the rocket's own tanks, plus
   the fluid type. Since these tanks now live on the rocket itself, they're shown regardless of
   whether the rocket is grounded or in flight, and regardless of whether there's a nearby launchpad.
-  While grounded on a launchpad, these fill/drain via the launchpad's pipe connections in real time;
-  you can also fill/drain them directly by right-clicking the rocket and using the bucket slots in
-  its inventory screen.
+  While grounded on a launchpad, these fill/drain via the launchpad's pipe connections in real time.
+  **[v1.3]** Manual bucket filling/draining has been removed; pipes/hoppers/Lua are the only way to
+  change these now.
 - **Inventory** — every item currently aboard the rocket, slot by slot. **[v1.2.4]** This is the
   same inventory a launchpad's hopper-accessible slots read from and write to while the rocket is
   grounded, and the same one you can edit directly by right-clicking the rocket — the Scanner shows
