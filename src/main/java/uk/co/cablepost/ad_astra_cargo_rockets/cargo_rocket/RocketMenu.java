@@ -1,5 +1,6 @@
 package uk.co.cablepost.ad_astra_cargo_rockets.cargo_rocket;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -9,7 +10,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.registries.ForgeRegistries;
 import javax.annotation.Nullable;
 import uk.co.cablepost.ad_astra_cargo_rockets.AdAstraCargoRockets;
 
@@ -47,10 +47,10 @@ public class RocketMenu extends net.minecraft.world.inventory.AbstractContainerM
                     case 1 -> rocket.fuelTank.getCapacity();
                     case 2 -> rocket.cargoFluidTank.getFluidAmount();
                     case 3 -> rocket.cargoFluidTank.getCapacity();
-                    // 流体の種類は文字列をContainerDataで同期できないため、レジストリIDを
-                    // 数値として送る（フルードレジストリIDはゲーム実行中は安定している）。
-                    case 4 -> ForgeRegistries.FLUIDS.getId(rocket.fuelTank.getFluid().getFluid());
-                    case 5 -> ForgeRegistries.FLUIDS.getId(rocket.cargoFluidTank.getFluid().getFluid());
+                    // 流体の種類は文字列をContainerDataで同期できないため、vanillaの
+                    // FLUIDレジストリの数値IDとして送る（ゲーム実行中は安定している）。
+                    case 4 -> BuiltInRegistries.FLUID.getId(rocket.fuelTank.getFluid().getFluid());
+                    case 5 -> BuiltInRegistries.FLUID.getId(rocket.cargoFluidTank.getFluid().getFluid());
                     default -> 0;
                 };
             }
@@ -84,7 +84,7 @@ public class RocketMenu extends net.minecraft.world.inventory.AbstractContainerM
     public Component getCargoFluidTypeName() { return fluidName(syncedValues[5]); }
 
     private static Component fluidName(int fluidId) {
-        var fluid = ForgeRegistries.FLUIDS.getValue(fluidId);
+        var fluid = BuiltInRegistries.FLUID.byId(fluidId);
         if (fluid == null || fluid == Fluids.EMPTY) return Component.literal("Empty");
         return new FluidStack(fluid, 1).getDisplayName();
     }
